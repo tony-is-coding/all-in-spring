@@ -1,3 +1,16 @@
+# Table of Contents
+
+  * [阶段一、Bean 元信息配置与解析](#阶段一bean-元信息配置与解析)
+    * [SpringBean 元对象之 BeanDefinition](#springbean-元对象之-beandefinition)
+    * [Bean元信息配置与加载 3 种方式](#bean元信息配置与加载-3-种方式)
+      * [1. 基于XML](#1-基于xml)
+      * [2. 基于注解](#2-基于注解)
+      * [3. 基于API](#3-基于api)
+  * [阶段二、**Spring Bean注册阶段**](#阶段二spring-bean注册阶段)
+  * [阶段三、**BeanDefinition合并阶段**](#阶段三beandefinition合并阶段)
+  * [阶段四、**Bean Class加载阶段**](#阶段四bean-class加载阶段)
+
+
 ## 阶段一、Bean 元信息配置与解析
 > **大前提** : Spring Bean 在实例化初始化之前, 其实都是以元对象 - `BeanDefinition` 存在；Spring容器启动的过程中，会将Bean解析成Spring内部的BeanDefinition结构。不管是是通过xml配置文件的<Bean>标签，还是通过注解配置的@Bean，还是@Compontent标注的类，还是扫描得到的类，它最终都会被解析成一个 `BeanDefinition `对象，最后Spring Bean工厂就会根据这份Bean的定义信息，对bean进行实例化、初始化等操作;
 ### SpringBean 元对象之 BeanDefinition

@@ -1,3 +1,12 @@
+# Table of Contents
+
+  * [**Bean销毁阶段**](#bean销毁阶段)
+    * [1. AbstractAutowireCapableBeanFactory#destroyBean](#1-abstractautowirecapablebeanfactorydestroybean)
+    * [2. ConfigurableBeanFactory#destroySingletons](#2-configurablebeanfactorydestroysingletons)
+    * [DisposableBeanAdapter#destroy 调用的逻辑说明](#disposablebeanadapterdestroy-调用的逻辑说明)
+      * [第一步、调用DestructionAwareBeanPostProcessor的postProcessBeforeDestruction](#第一步调用destructionawarebeanpostprocessor的postprocessbeforedestruction)
+
+
 ## **Bean销毁阶段**
 从源码角度来说, 触发SpringBean进行销毁的场景有以下两种
 

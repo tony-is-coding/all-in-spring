@@ -1,3 +1,23 @@
+# Table of Contents
+
+  * [阶段一、Bean实例化过程](#阶段一bean实例化过程)
+    * [实例化前置](#实例化前置)
+    * [实例化中](#实例化中)
+    * [实例化后置](#实例化后置)
+      * [1、 Bean缓存提前曝光](#1-bean缓存提前曝光)
+      * [2、 `**MergedBeanDefinitionPostProcessor**`](#2-mergedbeandefinitionpostprocessor)
+      * [3、 实例化后置 postProcessorAfterInstantiation](#3-实例化后置-postprocessorafterinstantiation)
+  * [阶段二、**Bean属性设置阶段**](#阶段二bean属性设置阶段)
+    * [@Autowird 或者 @Resource 注入](#autowird-或者-resource-注入)
+    * [属性值的应用](#属性值的应用)
+  * [阶段三、**Bean初始化阶段**](#阶段三bean初始化阶段)
+    * [BeanAware回调阶段](#beanaware回调阶段)
+    * [Bean初始化前置](#bean初始化前置)
+    * [Bean初始化](#bean初始化)
+    * [Bean初始化后置](#bean初始化后置)
+  * [阶段四、**所有单例bean初始化完成后阶段**](#阶段四所有单例bean初始化完成后阶段)
+
+
 ## 阶段一、Bean实例化过程
 ### 实例化前置
 Spring 在Bean实例化前提供了一个 实例化前置 AwarePostProcessor, 允许提前返回一个手动创建的bean, 这样可以绕过 Spring 容器的创建而手动创建对应的Bean;  这个步骤发生在Bean实例化前,  具体的代码位置在`AbstractAutowireCapableBeanFactory#createBean` 对 `AbstractAutowireCapableBeanFactory#resolveBeforeInstantiation`的调用
