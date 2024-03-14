@@ -225,7 +225,7 @@ org.cnc.explain.lifecycle.beaninitial_8.BeanAwareBean@31fa1761
 > 有一个小细节:   通过factory/application 手动注册进去的Bean只是注册了Beandefinition, 真正发生Bean初始化是在`getBean`时, 通过XML或Annotation加载的则不一样, 因为在Applicaiton `refresh`阶段则会加载所有的`**非懒加载Bean**`
 > ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661995996159-1adb86f4-78f0-4845-9441-6c43c70087db.png#averageHue=%23535c2d&clientId=u868d4ab0-a939-4&from=paste&height=78&id=u3e77b938&originHeight=78&originWidth=975&originalType=binary&ratio=1&rotation=0&showTitle=false&size=23298&status=done&style=none&taskId=ud32f7568-6100-4207-bfee-802dbbdd561&title=&width=975)
 
- 
+
 对Aware 相关方法支持在这个阶段做一些自定义注入或者缓存之类的
 ### Bean初始化前置
 初始化前置就是在初始化方法执行前的一系列回调,  主要是调用`BeanPostProcessor#postProcessorBeforeInitialization`这个回调, 默认情况下会包含6个基本的Processor
@@ -242,7 +242,7 @@ org.cnc.explain.lifecycle.beaninitial_8.BeanAwareBean@31fa1761
 - ApplicationStartupAware
 - ApplicationContextAware
 
- 比较常用的就是 `ApplicationContextAware`一般会用来作为一个通用的 Bean 管理工具, 提供一个ApplicationContext 的getBean 入口
+比较常用的就是 `ApplicationContextAware`一般会用来作为一个通用的 Bean 管理工具, 提供一个ApplicationContext 的getBean 入口
 ```java
 class BeanHolder implements ApplicationContextAware{
     private ApplicationContext applicationContext;
@@ -378,3 +378,10 @@ public void testReturnNewBeanByPostProcessAfterInitialization(){
 // 输出
 PostProcessAfterInitializationBean{name='from new Bean'}
 ```
+
+## 阶段四、**所有单例bean初始化完成后阶段**
+当所有的懒加载Bean都被加载完成后,Spring会遍历已经加载的Bean, 找出其中的  `SmartInitializingSingleton`,执行他们的 `afterSingletonsInstantiated`方法;   这个步骤的入口在 `DefaultListableBeanFactory#preInstantiateSingletons`
+![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662044621649-d4c5fea4-78bb-45c3-9e62-a417ec085eb0.png#averageHue=%23262626&clientId=ue77b7ba8-4cd9-4&from=paste&height=401&id=ua21bab27&originHeight=401&originWidth=990&originalType=binary&ratio=1&rotation=0&showTitle=false&size=77476&status=done&style=none&taskId=u7552ec18-0d12-4e12-a0f0-13fe96c3be4&title=&width=990)
+> 可以在这个阶段进行一些通知通告的调用,或者一些缓存的加载了,  因为到了这里基本上是确定所有的Bean都已经初始化完成
+
+
