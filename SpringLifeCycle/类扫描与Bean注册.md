@@ -236,5 +236,5 @@ public void testBeanDefinitionRegistry() {
 
 
 ## 阶段四、**Bean Class加载阶段**
-在`AbstractBeanDefinition` 中有一个属性 `private volatile Object beanClass `, 初始化时是一个字符串类型的BeanName, 在Bean的生命周期过程中, 通过 `AbstractBeanFactory#resolveBeanClass`方法将对应的BeanName转换为加载的Class对象, 然后设置到对应的BeanDefinition中去, 这个步骤发生在`AbstractAutowireCapableBeanFactory#createBean` 方法中
-![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661422732010-46976dbc-18fd-4c4f-88d9-494bad0c66d2.png#averageHue=%232f2c2c&clientId=u9b97e286-4b34-4&from=paste&height=489&id=ueb66a486&originHeight=489&originWidth=958&originalType=binary&ratio=1&rotation=0&showTitle=false&size=78409&status=done&style=none&taskId=u7d46c7e7-3996-4e41-984d-5935c136eca&title=&width=958)
+在`AbstractBeanDefinition` 中有一个属性 `private volatile Object beanClass`, 初始化时是一个字符串类型的BeanName, 在Bean的生命周期过程中, 通过 `AbstractBeanFactory#resolveBeanClass`方法将对应的BeanName转换为加载的Class对象, 然后设置到对应的BeanDefinition中去, 这个步骤发生在`AbstractAutowireCapableBeanFactory#createBean` 方法中
+![img.png](src/i2.png)
