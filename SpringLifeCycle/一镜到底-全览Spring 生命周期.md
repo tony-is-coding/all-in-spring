@@ -15,7 +15,7 @@
     * [实例化中](#实例化中)
     * [实例化后置](#实例化后置)
       * [1、 Bean缓存提前曝光](#1-bean缓存提前曝光)
-      * [2、 `**MergedBeanDefinitionPostProcessor**`](#2-mergedbeandefinitionpostprocessor)
+      * [2、 MergedBeanDefinitionPostProcessor](#2-mergedbeandefinitionpostprocessor)
       * [3、 实例化后置 postProcessorAfterInstantiation](#3-实例化后置-postprocessorafterinstantiation)
   * [阶段六、**Bean属性设置阶段**](#阶段六bean属性设置阶段)
     * [@Autowird 或者 @Resource 注入](#autowird-或者-resource-注入)
@@ -372,7 +372,7 @@ Spring在Bean对象的实例化完成后, 还会进行**三个**核心的操作
 #### 1、 Bean缓存提前曝光
 将Bean对象加入到三级缓存`**singletonFactories**`中去,  这个时候将创建中的对象提前曝光到工厂集合中, 后续有同样的方法来执行`doGetBean`操作会提前走到三级缓存,  就可以在互斥的锁情况下进行对象的同步创建了
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661694988236-81e59475-f436-44fd-aa6e-acda1a942f02.png#averageHue=%23353332&clientId=u352ea755-d71b-4&from=paste&height=736&id=u49b507b9&originHeight=736&originWidth=957&originalType=binary&ratio=1&rotation=0&showTitle=false&size=141655&status=done&style=none&taskId=u2f4a61df-1990-4962-bf57-30f4633e407&title=&width=957)
-#### 2、 `**MergedBeanDefinitionPostProcessor**`
+#### 2、MergedBeanDefinitionPostProcessor
 进行实例化的后置的 `**MergedBeanDefinitionPostProcessor#postProcessorMergedBeanDefinition**`处理
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661821908238-5275b0c3-0aaf-41b3-8bea-3c36506c1577.png#averageHue=%23333232&clientId=u58396178-5560-4&from=paste&height=292&id=u2997dda0&originHeight=292&originWidth=802&originalType=binary&ratio=1&rotation=0&showTitle=false&size=38246&status=done&style=none&taskId=uf9aee80c-725e-4725-a631-b8882a2c599&title=&width=802)
 默认情况下,  Spring只添加了`ApplicationListenerDetector` 这一个Processor, 这个processor 用于收集那些实现了 `ApplicationListener`的Bean, 算是对Spring事件驱动模型的一种支持;  
