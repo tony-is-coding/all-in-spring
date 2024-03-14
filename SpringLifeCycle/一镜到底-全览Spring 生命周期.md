@@ -1,3 +1,41 @@
+# 一镜到底-全览Spring 生命周期
+* [第一部分、生命周期阶段导图](#第一部分生命周期阶段导图)
+* [第二部分、生命周期阶段详解](#第二部分生命周期阶段详解)
+  * [阶段一、Bean 元信息配置与解析](#阶段一bean-元信息配置与解析)
+    * [SpringBean 元对象之 BeanDefinition](#springbean-元对象之-beandefinition)
+    * [Bean元信息配置与加载 3 种方式](#bean元信息配置与加载-3-种方式)
+      * [1. 基于XML](#1-基于xml)
+      * [2. 基于注解](#2-基于注解)
+      * [3. 基于API](#3-基于api)
+  * [阶段二、**Spring Bean注册阶段**](#阶段二spring-bean注册阶段)
+  * [阶段三、**BeanDefinition合并阶段**](#阶段三beandefinition合并阶段)
+  * [阶段四、**Bean Class加载阶段**](#阶段四bean-class加载阶段)
+  * [阶段五、Bean实例化过程](#阶段五bean实例化过程)
+    * [实例化前置](#实例化前置)
+    * [实例化中](#实例化中)
+    * [实例化后置](#实例化后置)
+      * [1、 Bean缓存提前曝光](#1-bean缓存提前曝光)
+      * [2、 `**MergedBeanDefinitionPostProcessor**`](#2-mergedbeandefinitionpostprocessor)
+      * [3、 实例化后置 postProcessorAfterInstantiation](#3-实例化后置-postprocessorafterinstantiation)
+  * [阶段六、**Bean属性设置阶段**](#阶段六bean属性设置阶段)
+    * [@Autowird 或者 @Resource 注入](#autowird-或者-resource-注入)
+    * [属性值的应用](#属性值的应用)
+  * [阶段七、**Bean初始化阶段**](#阶段七bean初始化阶段)
+    * [BeanAware回调阶段](#beanaware回调阶段)
+    * [Bean初始化前置](#bean初始化前置)
+    * [Bean初始化](#bean初始化)
+    * [Bean初始化后置](#bean初始化后置)
+  * [阶段八、**所有单例bean初始化完成后阶段**](#阶段八所有单例bean初始化完成后阶段)
+  * [阶段九、**Bean销毁阶段**](#阶段九bean销毁阶段)
+    * [1. AbstractAutowireCapableBeanFactory#destroyBean](#1-abstractautowirecapablebeanfactorydestroybean)
+    * [2. ConfigurableBeanFactory#destroySingletons](#2-configurablebeanfactorydestroysingletons)
+    * [DisposableBeanAdapter#destroy 调用的逻辑说明](#disposablebeanadapterdestroy-调用的逻辑说明)
+      * [第一步、调用DestructionAwareBeanPostProcessor的postProcessBeforeDestruction](#第一步调用destructionawarebeanpostprocessor的postprocessbeforedestruction)
+      * [第二步、 执行DisposableBean的destory](#第二步-执行disposablebean的destory)
+      * [第三步、执行自定义的销毁方法](#第三步执行自定义的销毁方法)
+* [第三部分、生命周期钩子](#第三部分生命周期钩子)
+
+
 # 第一部分、生命周期阶段导图
 ![Bean 生命周期阶段 - 导图.jpg](https://cdn.nlark.com/yuque/0/2022/jpeg/22746802/1663118287776-9d2dc7b8-5b74-4007-a33d-373c1517e54e.jpeg#averageHue=%23f8f7f7&clientId=u61c26ef5-f7e8-4&from=ui&id=u630bed80&originHeight=2686&originWidth=2676&originalType=binary&ratio=1&rotation=0&showTitle=false&size=802616&status=done&style=none&taskId=ueb5412c9-4075-445c-8ed6-fbca2cae660&title=)
 
@@ -5,8 +43,8 @@
 ## 阶段一、Bean 元信息配置与解析
 > **大前提** : Spring Bean 在实例化初始化之前, 其实都是以元对象 - `BeanDefinition` 存在；Spring容器启动的过程中，会将Bean解析成Spring内部的BeanDefinition结构。不管是是通过xml配置文件的<Bean>标签，还是通过注解配置的@Bean，还是@Compontent标注的类，还是扫描得到的类，它最终都会被解析成一个 `BeanDefinition `对象，最后Spring Bean工厂就会根据这份Bean的定义信息，对bean进行实例化、初始化等操作;
 
-### SpringBean 元对象之 BeanDefinition 
-> BeanDefinition描述了关于Bean定义的各种信息,  例如: 
+### SpringBean 元对象之 BeanDefinition
+> BeanDefinition描述了关于Bean定义的各种信息,  例如:
 > - bean对应的class
 > - scope
 > - lazy信息
@@ -106,7 +144,7 @@ public void testParseFromAnnotationConfiguration() {
     }
 }
 ```
-此外, 通过注解形式手动进行bean注册解析, 能够解析出 Bean 类上添加的一些关于BeanDefinition的注解,  `@ComponentScan` 就是基于这个做的扫描与注册, 底层的调用就是  `private <T> void AnnotatedBeanDefinitionReader#doRegisterBean` 方法, 创建一个 `AnnotationGenericBeanDefinition`  对象,  然后注册到内部的  `**BeanFactory**`** **工厂中** **中 
+此外, 通过注解形式手动进行bean注册解析, 能够解析出 Bean 类上添加的一些关于BeanDefinition的注解,  `@ComponentScan` 就是基于这个做的扫描与注册, 底层的调用就是  `private <T> void AnnotatedBeanDefinitionReader#doRegisterBean` 方法, 创建一个 `AnnotationGenericBeanDefinition`  对象,  然后注册到内部的  `**BeanFactory**`** **工厂中** **中
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1660009546120-97cea824-8dca-41b6-9c00-0cc27b9d4f68.png#averageHue=%23323231&clientId=uc9d4667e-089e-4&from=paste&height=884&id=qemg2&originHeight=884&originWidth=1077&originalType=binary&ratio=1&rotation=0&showTitle=false&size=146666&status=done&style=none&taskId=ucf84307e-9538-4189-bd78-c0fdbf49e50&title=&width=1077)
 
 看一下输出情况,  符合预期
@@ -176,8 +214,8 @@ public void testConfigBeanFromBuilderApi() {
 ```
 
 ## 阶段二、**Spring Bean注册阶段**
-> **首先明确一点, SpringBean注册其实可以认为就是 **`**BeanDefinition**`**的注册; **     
-> 
+> **首先明确一点, SpringBean注册其实可以认为就是 **`**BeanDefinition**`**的注册; **
+>
 
 这里就会涉及到一个关键的接口: `BeanDefinitionRegistry`**,** Spring Bean注册将解析好的Bean注册到Bean注册器/Bean工厂内, 在Spring整体框架内一些核心的BeanFactory实现了BeanDefinitionRegistry接口, 代表支持将BeanDefinition注册到对应的BeanFactory容器中, 看一下类图
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661398128624-d025a8f7-9e99-46ab-b19f-9a81333f4ab9.png#averageHue=%232c2c2c&clientId=u9b97e286-4b34-4&from=paste&height=493&id=u14154405&originHeight=738&originWidth=1398&originalType=binary&ratio=1&rotation=0&showTitle=false&size=73831&status=done&style=none&taskId=u81eca684-d980-49dd-bfd6-db514b49c42&title=&width=934)
@@ -189,9 +227,9 @@ BeanDefinition 接口有三个直接的实现类
 
 - **DefaultListableBeanFactory** :  BeanDefinitionRegistry 的`唯一使用到`实现, BeanDefinitionRegistry的主要能力都由这个类实现
 - **SimpleBeanDefinitionRegistry**:  只在测试使用
-:::success
-**结论:  DefaultListableBeanFactory 是 BeanDefinitionRegistry 的唯一实现**
-:::
+  :::success
+  **结论:  DefaultListableBeanFactory 是 BeanDefinitionRegistry 的唯一实现**
+  :::
 
 
 **DefaultListableBeanFactory **实现了 BeanFactory 也印证了注册BeanDefinition相当于注册Bean的说法,  当然具体Bean的生成和存储还是会有更多细节； Spring官方对此也有佐证，比如基于 Annotation 配置的Bean最终会走到 `org.springframework.context.annotation.AnnotatedBeanDefinitionReader#doRegisterBean` 方法,   实际上方法内注册是 `**BeanDefinition**`
@@ -227,7 +265,7 @@ public void testBeanDefinitionRegistry() {
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661399904148-d934c4b1-a508-4da4-8624-6d8d8b686a4c.png#averageHue=%232e2c2c&clientId=u9b97e286-4b34-4&from=paste&height=567&id=u4cb101e1&originHeight=567&originWidth=1010&originalType=binary&ratio=1&rotation=0&showTitle=false&size=102313&status=done&style=none&taskId=u621d18bc-76ff-4e75-8dfe-3b88e185a53&title=&width=1010)
 
 ## 阶段三、**BeanDefinition合并阶段**
-> 一些场景下, 可能存在一些父子Bean的场景, Bean的一些set配置存在父级时, 就需要对Bean进行一个父子合并，才能得到一个完整的子Bean对象, 这个阶段是将父bean的BeanDefinition与子 bean的BeanDefinition进行合并，最终得到一个包含完整信息的 RootBeanDefinition; 
+> 一些场景下, 可能存在一些父子Bean的场景, Bean的一些set配置存在父级时, 就需要对Bean进行一个父子合并，才能得到一个完整的子Bean对象, 这个阶段是将父bean的BeanDefinition与子 bean的BeanDefinition进行合并，最终得到一个包含完整信息的 RootBeanDefinition;
 
 具体进行 BeanDefinition 合并的地方在 `org.springframework.beans.factory.support.AbstractBeanFactory#doGetBean`
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661420518425-db676f3f-1b60-489f-952f-42a7bf9ed56e.png#averageHue=%232f2b2b&clientId=u9b97e286-4b34-4&from=paste&height=295&id=u95437b3b&originHeight=295&originWidth=1014&originalType=binary&ratio=1&rotation=0&showTitle=false&size=50302&status=done&style=none&taskId=u5f7c9297-5c87-4b35-8eb0-2e2c487c334&title=&width=1014)
@@ -327,7 +365,7 @@ public void testMySmartInstantiationAwareBeanPostProcessor(){
 
 此外，还提供了BeanDefinition级别的两个入口,能够拦截到实例化,提供一个bean实例返回, **使用场景逐渐被放弃**
 
-- Instance Supplier  
+- Instance Supplier
 - factory-method
 ### 实例化后置
 Spring在Bean对象的实例化完成后, 还会进行**三个**核心的操作
@@ -338,10 +376,10 @@ Spring在Bean对象的实例化完成后, 还会进行**三个**核心的操作
 进行实例化的后置的 `**MergedBeanDefinitionPostProcessor#postProcessorMergedBeanDefinition**`处理
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661821908238-5275b0c3-0aaf-41b3-8bea-3c36506c1577.png#averageHue=%23333232&clientId=u58396178-5560-4&from=paste&height=292&id=u2997dda0&originHeight=292&originWidth=802&originalType=binary&ratio=1&rotation=0&showTitle=false&size=38246&status=done&style=none&taskId=uf9aee80c-725e-4725-a631-b8882a2c599&title=&width=802)
 默认情况下,  Spring只添加了`ApplicationListenerDetector` 这一个Processor, 这个processor 用于收集那些实现了 `ApplicationListener`的Bean, 算是对Spring事件驱动模型的一种支持;  
-这个阶段可以做的事情比较多, 但是比较突出的机制是:  对已经完成父子合并的BeanDefinition进行一次后置处理,  后续的多个步骤如属性设置, 初始化等都会依赖这个MergedBeanDefinition; 
+这个阶段可以做的事情比较多, 但是比较突出的机制是:  对已经完成父子合并的BeanDefinition进行一次后置处理,  后续的多个步骤如属性设置, 初始化等都会依赖这个MergedBeanDefinition;
 **可以通过多个实现Processor收集一些元信息在Bean的生命周期各个阶段进行应用,  但是场景少见**
 **针对这个用法，目前没有很好的应用场景， 待发掘中...**
-#### 3、 实例化后置 postProcessorAfterInstantiation 
+#### 3、 实例化后置 postProcessorAfterInstantiation
 在进入正在的属性设置前, Spring提供了一个实例化后置处理入口: `InstantiationAwareBeanPostProcessor#postProcessAfterInstantiation`,  这个方法执行的地点在:  `AbstractAutowireCapableBeanFactory#populateBean`, 主要的作用有
 
 - 提前对字段进行注入或者修改等
@@ -403,17 +441,17 @@ Spring Bean的属性设置阶段核心发生在`AbstractAutowireCapableBeanFacto
 
 - **CommonAnnotationBeanPostProcesor**
 
-这个类主要是Spring 实现用来支持 JSR-250 标准的; 
+这个类主要是Spring 实现用来支持 JSR-250 标准的;
 在这个阶段这个Processor 核心处理的是 `@Resource` 注解的注入
 
 - **AutowirdAnnotationBeanPostProcessor**
 
-这个类Spring 主要是用来提供Spring标准的注入注解处理以及 JSR-330的部分注解支持; 
+这个类Spring 主要是用来提供Spring标准的注入注解处理以及 JSR-330的部分注解支持;
 在这个阶段这个Processor 核心处理的是 `@Autowired` 注解的注入, 当然这个注解还提供了对 `@Value`  和 `@Inject` 的支持
 
 同时可以直接实现一个 `InstantiationAwareBeanPostProcessor` 对属性设置前置的处理, 进行属性拦截自定义等;
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661911071796-17cafdb6-0385-4d18-ba72-c208ef6ea638.png#averageHue=%23332c2b&clientId=u5daf9a4a-7269-4&from=paste&height=385&id=u114be4c4&originHeight=385&originWidth=1054&originalType=binary&ratio=1&rotation=0&showTitle=false&size=74218&status=done&style=none&taskId=u86864240-2f5a-449d-a136-6c152aced44&title=&width=1054)
-特别需要注意的是, 这个阶段分别调用了两个钩子函数 : 
+特别需要注意的是, 这个阶段分别调用了两个钩子函数 :
 
 - `**postProcessProperties**`
 - `**postProcessPropertyValues **`** **
@@ -435,7 +473,7 @@ Spring 的初始化整个可以理解为围绕着执行初始化方法这个动�
 2. BeanClassLoaderAware
 3. BeanClassLoaderAware
 
-简单示例下: 
+简单示例下:
 ```java
 public class BeanAwareBean implements BeanNameAware, BeanFactoryAware, BeanClassLoaderAware {
 	@Override
@@ -471,10 +509,10 @@ org.cnc.explain.lifecycle.beaninitial_8.BeanAwareBean@31fa1761
 > 有一个小细节:   通过factory/application 手动注册进去的Bean只是注册了Beandefinition, 真正发生Bean初始化是在`getBean`时, 通过XML或Annotation加载的则不一样, 因为在Applicaiton `refresh`阶段则会加载所有的`**非懒加载Bean**`
 > ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661995996159-1adb86f4-78f0-4845-9441-6c43c70087db.png#averageHue=%23535c2d&clientId=u868d4ab0-a939-4&from=paste&height=78&id=u3e77b938&originHeight=78&originWidth=975&originalType=binary&ratio=1&rotation=0&showTitle=false&size=23298&status=done&style=none&taskId=ud32f7568-6100-4207-bfee-802dbbdd561&title=&width=975)
 
- 
+
 对Aware 相关方法支持在这个阶段做一些自定义注入或者缓存之类的
 ### Bean初始化前置
-初始化前置就是在初始化方法执行前的一系列回调,  主要是调用`BeanPostProcessor#postProcessorBeforeInitialization`这个回调, 默认情况下会包含6个基本的Processor 
+初始化前置就是在初始化方法执行前的一系列回调,  主要是调用`BeanPostProcessor#postProcessorBeforeInitialization`这个回调, 默认情况下会包含6个基本的Processor
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1661997233181-55e44e2f-97f8-45e3-bf07-9af60dba89c8.png#averageHue=%23373a3c&clientId=u868d4ab0-a939-4&from=paste&height=129&id=u8d15bb8b&originHeight=129&originWidth=609&originalType=binary&ratio=1&rotation=0&showTitle=false&size=28324&status=done&style=none&taskId=u6a38b646-0fdf-4fc3-b235-009e770b69a&title=&width=609)
 但是实际上,只有 `ApplicationContextAwareProcessor` 在这个的实现有实际的作用,  具体代码可以看`ApplicationContextAwareProcessor#postProcessBeforeInitialization`
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662038320857-35cab3ca-74ff-4d35-a0f9-37157623c8cb.png#averageHue=%23272525&clientId=ue77b7ba8-4cd9-4&from=paste&height=627&id=u47d1aeb0&originHeight=627&originWidth=963&originalType=binary&ratio=1&rotation=0&showTitle=false&size=87867&status=done&style=none&taskId=ud910147c-89d1-440c-9813-87f8f553894&title=&width=963)
@@ -504,9 +542,9 @@ class BeanHolder implements ApplicationContextAware{
 ### Bean初始化
 初始化过程就是执行选择的执行初始化方法, Spring 支持的指定Bean的初始化方法的三种方法
 
-1. 基于XML配置指定 `init-method` 
+1. 基于XML配置指定 `init-method`
 2. 基于注解 @Bean(initMethod="xx")
-3. 通过手动注入初始化方法属性到  `AbstractBeanDefinition#initMethodName` 
+3. 通过手动注入初始化方法属性到  `AbstractBeanDefinition#initMethodName`
 
 这三种方法从根本上来说是互相独立的,   因为配置Bean的方式是不同的入口
 
@@ -640,7 +678,7 @@ PostProcessAfterInitializationBean{name='from new Bean'}
 - 调用`ConfigurableBeanFactory#destroySingletons` 前文说过,  这个只有一个最终实现就是, **DefaultListableBeanFactory,  **同时还有一个`AbstractApplicationContext#close`,  但是这个方法最终还会回到`ConfigurableBeanFactory#destroySingletons`
 
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662286519607-c9a7e129-9bd8-4962-bcfe-5d0f4f0caf4a.png#averageHue=%23282726&clientId=ub2e6a66f-7d25-4&from=paste&height=174&id=u28b2c036&originHeight=174&originWidth=712&originalType=binary&ratio=1&rotation=0&showTitle=false&size=21106&status=done&style=none&taskId=ud4b59101-39ae-409f-95d1-0b3585726de&title=&width=712)
-### 1. AbstractAutowireCapableBeanFactory#destroyBean 
+### 1. AbstractAutowireCapableBeanFactory#destroyBean
 基于这个流程的最终调用会到  `DisposableBeanAdapter#destroy`
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662300064171-c6b4c00a-41f3-43c9-a4ea-744d1b186e52.png#averageHue=%23333232&clientId=ub2e6a66f-7d25-4&from=paste&height=147&id=ud967bcfb&originHeight=147&originWidth=903&originalType=binary&ratio=1&rotation=0&showTitle=false&size=18610&status=done&style=none&taskId=u5fde3550-2c74-41c4-842a-c5b96b4e34b&title=&width=903)
 ### 2. ConfigurableBeanFactory#destroySingletons
@@ -656,8 +694,8 @@ PostProcessAfterInitializationBean{name='from new Bean'}
 > 跟进发现其实基于 ConfigurableBeanFactory的调用最终会调用到  `DisposableBeanAdapter#destroy`, 但是两种调用路径的区别在于: `AbstractAutowireCapableBeanFactory#destroyBean`直接调用的生成的 `DisposableBeanAdapter#destroy` 没有`destoryMethod`,导致不能调用自定义的销毁方法
 
 ### DisposableBeanAdapter#destroy 调用的逻辑说明
-#### 第一步、调用DestructionAwareBeanPostProcessor的postProcessBeforeDestruction 
-这个阶段主要是执行了关键一个Processor: **InitDestroyAnnotationBeanPostProcessor** **,  **这个Processor在销毁阶段会执行 `@PreDestroy` 这个注解的方法 
+#### 第一步、调用DestructionAwareBeanPostProcessor的postProcessBeforeDestruction
+这个阶段主要是执行了关键一个Processor: **InitDestroyAnnotationBeanPostProcessor****,  **这个Processor在销毁阶段会执行 `@PreDestroy` 这个注解的方法
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662302326571-82401d5a-dedd-47cf-9c8f-3d1d4b4f0ece.png#averageHue=%232c2c2b&clientId=ub2e6a66f-7d25-4&from=paste&height=305&id=ud2dcf72b&originHeight=305&originWidth=1160&originalType=binary&ratio=1&rotation=0&showTitle=false&size=60094&status=done&style=none&taskId=udd93e8d4-4a71-4d1b-af44-13fde117b09&title=&width=1160)
 同时,也可以自定义实现` DestructionAwareBeanPostProcessor#postProcessBeforeDestruction` 进行相关销毁拦截
 
@@ -682,7 +720,7 @@ public void testDestructionAwareBeanPostProcessor() {
 // 输出
 执行 DestructionAwareBeanPostProcessorBean 的销毁
 ```
- 
+
 #### 第二步、 执行DisposableBean的destory
 这个阶段的执行源码如下:
 ![image.png](https://cdn.nlark.com/yuque/0/2022/png/22746802/1662302529435-c9176f48-7456-4943-8021-7dab8a381656.png#averageHue=%232c2b2b&clientId=ub2e6a66f-7d25-4&from=paste&height=567&id=u63f0a4f2&originHeight=567&originWidth=969&originalType=binary&ratio=1&rotation=0&showTitle=false&size=78793&status=done&style=none&taskId=u492f428d-ab42-441c-a8b9-e91e0a39e75&title=&width=969)
